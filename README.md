@@ -62,7 +62,7 @@ npm run dev
 
 The project includes special admin features for data management:
 - On the Colleges by Location page, admin users can import Gujarat colleges data
-- Admin access is granted to specific email addresses (currently configured for "admin@example.com" and "parinp157@gmail.com")
+- Admin access is granted to specific email addresses (currently configured for "admin@example.com")
 
 ## Deploying to Production
 
