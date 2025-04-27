@@ -152,13 +152,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get Groq API key from environment
       const apiKey = process.env.GROQ_API_KEY;
       if (!apiKey) {
+        console.error("Groq API key is missing from environment variables");
         return res.status(500).json({ message: "Groq API key not configured" });
       }
       
+      console.log("Using Groq API key:", apiKey.substring(0, 5) + "...");
+      
       const chatRequest: GroqChatRequest = {
         messages,
-        model: "llama3-8b-8192", // Using LLama3 8B model which is available in Groq
+        model: "llama3-70b-8192", // Using Llama3 model as requested
       };
+      
+      console.log("Sending request to Groq API with model:", chatRequest.model);
       
       // Make request to Groq API
       const response = await axios.post(
@@ -173,15 +178,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       
       res.json(response.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error calling Groq API:", error);
-      if (axios.isAxiosError(error) && error.response) {
-        return res.status(error.response.status).json({ 
+      if (axios.isAxiosError(error)) {
+        console.error("Axios error details:", {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data
+        });
+        return res.status(error.response?.status || 500).json({ 
           message: "Error from Groq API",
-          error: error.response.data 
+          error: error.response?.data || error.message
         });
       }
-      res.status(500).json({ message: "Failed to get AI response" });
+      res.status(500).json({ message: "Failed to get AI response", error: error.message });
     }
   });
 

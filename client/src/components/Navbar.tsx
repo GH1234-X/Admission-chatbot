@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { logout } from "@/lib/firebase";
-import AuthModal from "./AuthModal";
+import { AuthModal } from './AuthModal';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -17,24 +17,18 @@ import { useToast } from "@/hooks/use-toast";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [isLogin, setIsLogin] = useState(true);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [location] = useLocation();
-  const { currentUser } = useAuth();
+  const { user, logout: authLogout } = useAuth();
   const { toast } = useToast();
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
-  const handleOpenAuthModal = (loginMode: boolean) => {
-    setIsLogin(loginMode);
-    setAuthModalOpen(true);
-  };
-
   const handleLogout = async () => {
     try {
-      await logout();
+      await authLogout();
       toast({
         title: "Logged out successfully",
         description: "You have been logged out of your account",
@@ -53,7 +47,7 @@ const Navbar = () => {
       <nav className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <div className="flex">
+            <div className="flex items-center">
               <div className="flex-shrink-0 flex items-center">
                 <Link href="/">
                   <div className="text-primary font-bold text-xl flex items-center cursor-pointer">
@@ -62,9 +56,9 @@ const Navbar = () => {
                   </div>
                 </Link>
               </div>
-              <div className="hidden md:ml-6 md:flex md:space-x-8">
+              <div className="hidden md:ml-6 md:flex md:items-center md:space-x-8">
                 <Link href="/">
-                  <a className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                  <a className={`inline-flex items-center h-16 px-1 border-b-2 text-sm font-medium ${
                     location === "/" 
                       ? "border-primary text-gray-900" 
                       : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
@@ -73,7 +67,7 @@ const Navbar = () => {
                   </a>
                 </Link>
                 <Link href="/chat">
-                  <a className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                  <a className={`inline-flex items-center h-16 px-1 border-b-2 text-sm font-medium ${
                     location === "/chat" 
                       ? "border-primary text-gray-900" 
                       : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
@@ -82,7 +76,7 @@ const Navbar = () => {
                   </a>
                 </Link>
                 <Link href="/resources">
-                  <a className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                  <a className={`inline-flex items-center h-16 px-1 border-b-2 text-sm font-medium ${
                     location.includes("/resources") 
                       ? "border-primary text-gray-900" 
                       : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
@@ -91,7 +85,7 @@ const Navbar = () => {
                   </a>
                 </Link>
                 <Link href="/engineering-cutoffs">
-                  <a className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                  <a className={`inline-flex items-center h-16 px-1 border-b-2 text-sm font-medium ${
                     location === "/engineering-cutoffs" 
                       ? "border-primary text-gray-900" 
                       : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
@@ -99,9 +93,9 @@ const Navbar = () => {
                     Engineering Cutoffs
                   </a>
                 </Link>
-                {currentUser?.email === "admin@example.com" || currentUser?.email === "parinp157@gmail.com" ? (
+                {user?.email === "admin@example.com" || user?.email === "parinp157@gmail.com" ? (
                   <Link href="/admin-dashboard">
-                    <a className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                    <a className={`inline-flex items-center h-16 px-1 border-b-2 text-sm font-medium ${
                       location === "/admin-dashboard"
                         ? "border-primary text-gray-900"
                         : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
@@ -113,33 +107,41 @@ const Navbar = () => {
               </div>
             </div>
             <div className="hidden md:ml-6 md:flex md:items-center">
-              {!currentUser ? (
+              {!user ? (
                 <div className="flex space-x-4">
                   <Button
                     variant="ghost"
-                    onClick={() => handleOpenAuthModal(true)}
+                    onClick={() => setIsAuthModalOpen(true)}
                   >
                     Log in
                   </Button>
-                  <Button onClick={() => handleOpenAuthModal(false)}>
+                  <Button onClick={() => setIsAuthModalOpen(true)}>
                     Sign up
                   </Button>
                 </div>
               ) : (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Avatar className="cursor-pointer">
-                      <AvatarImage src={currentUser.photoURL || undefined} />
-                      <AvatarFallback>{currentUser.email?.charAt(0).toUpperCase() || "U"}</AvatarFallback>
-                    </Avatar>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user.photoURL || ''} alt={user.displayName || ''} />
+                        <AvatarFallback>{user.displayName?.[0] || user.email?.[0]}</AvatarFallback>
+                      </Avatar>
+                    </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{user.displayName}</p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                          {user.email}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <Link href="/profile">
-                      <DropdownMenuItem>Profile</DropdownMenuItem>
-                    </Link>
-                    <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout}>
+                      Log out
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
@@ -197,7 +199,7 @@ const Navbar = () => {
                 Engineering Cutoffs
               </a>
             </Link>
-            {currentUser?.email === "admin@example.com" || currentUser?.email === "parinp157@gmail.com" ? (
+            {user?.email === "admin@example.com" || user?.email === "parinp157@gmail.com" ? (
               <Link href="/admin-dashboard">
                 <a className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
                   location === "/admin-dashboard"
@@ -210,18 +212,18 @@ const Navbar = () => {
             ) : null}
           </div>
           <div className="pt-4 pb-3 border-t border-gray-200">
-            {!currentUser ? (
+            {!user ? (
               <div className="mt-3 space-y-1">
                 <Button
                   variant="ghost"
                   className="block w-full text-left px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
-                  onClick={() => handleOpenAuthModal(true)}
+                  onClick={() => setIsAuthModalOpen(true)}
                 >
                   Log in
                 </Button>
                 <Button
                   className="block w-full text-left px-4 py-2 text-base font-medium text-white bg-primary hover:bg-primary-700"
-                  onClick={() => handleOpenAuthModal(false)}
+                  onClick={() => setIsAuthModalOpen(true)}
                 >
                   Sign up
                 </Button>
@@ -249,12 +251,12 @@ const Navbar = () => {
         </div>
       </nav>
 
-      <AuthModal 
-        isOpen={authModalOpen} 
-        onClose={() => setAuthModalOpen(false)} 
-        isLogin={isLogin}
-        setIsLogin={setIsLogin}
-      />
+      {isAuthModalOpen && (
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+        />
+      )}
     </>
   );
 };

@@ -2,20 +2,15 @@ import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import AuthModal from "@/components/AuthModal";
-import FirebaseAuthInstructions from "@/components/FirebaseAuthInstructions";
+import { AuthModal } from '@/components/AuthModal';
 import collegeBuilding from "../assets/college-building.svg";
 
 const HomePage = () => {
-  const { currentUser } = useAuth();
-  const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [isLogin, setIsLogin] = useState(true);
+  const { user } = useAuth();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   return (
     <div className="flex-grow">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
-        <FirebaseAuthInstructions />
-      </div>
       {/* Hero Section */}
       <div className="relative bg-white overflow-hidden">
         <div className="max-w-7xl mx-auto">
@@ -40,7 +35,7 @@ const HomePage = () => {
                   Get instant answers to your academic questions, explore scholarship opportunities, and access college cutoff information - all in one place.
                 </p>
                 <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
-                  {currentUser ? (
+                  {user ? (
                     <div className="rounded-md shadow">
                       <Link href="/chat">
                         <Button className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white md:py-4 md:text-lg md:px-10">
@@ -54,8 +49,7 @@ const HomePage = () => {
                         <Button 
                           className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white md:py-4 md:text-lg md:px-10"
                           onClick={() => {
-                            setIsLogin(false);
-                            setAuthModalOpen(true);
+                            setIsAuthModalOpen(true);
                           }}
                         >
                           Get Started
@@ -66,8 +60,7 @@ const HomePage = () => {
                           variant="outline"
                           className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md md:py-4 md:text-lg md:px-10"
                           onClick={() => {
-                            setIsLogin(true);
-                            setAuthModalOpen(true);
+                            setIsAuthModalOpen(true);
                           }}
                         >
                           Learn More
@@ -157,7 +150,7 @@ const HomePage = () => {
       </div>
 
       {/* CTA Section - Only shown when not logged in */}
-      {!currentUser && (
+      {!user && (
         <div className="bg-white">
           <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8 lg:flex lg:items-center lg:justify-between">
             <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
@@ -169,8 +162,7 @@ const HomePage = () => {
                 <Button
                   className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white"
                   onClick={() => {
-                    setIsLogin(false);
-                    setAuthModalOpen(true);
+                    setIsAuthModalOpen(true);
                   }}
                 >
                   Sign up for free
@@ -181,8 +173,7 @@ const HomePage = () => {
                   variant="outline"
                   className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md"
                   onClick={() => {
-                    setIsLogin(true);
-                    setAuthModalOpen(true);
+                    setIsAuthModalOpen(true);
                   }}
                 >
                   Learn more
@@ -194,12 +185,12 @@ const HomePage = () => {
       )}
 
       {/* Auth Modal */}
-      <AuthModal
-        isOpen={authModalOpen}
-        onClose={() => setAuthModalOpen(false)}
-        isLogin={isLogin}
-        setIsLogin={setIsLogin}
-      />
+      {isAuthModalOpen && (
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+        />
+      )}
     </div>
   );
 };

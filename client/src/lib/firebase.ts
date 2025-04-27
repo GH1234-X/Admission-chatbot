@@ -1,4 +1,5 @@
-import { initializeApp } from "firebase/app";
+
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { 
   getAuth, 
   signInWithEmailAndPassword, 
@@ -8,7 +9,8 @@ import {
   signInWithPopup, 
   onAuthStateChanged,
   updateProfile as firebaseUpdateProfile,
-  User as FirebaseUser
+  User as FirebaseUser,
+  sendEmailVerification
 } from "firebase/auth";
 import { getFirestore, collection, getDocs, addDoc, query, where, orderBy, limit, Timestamp, serverTimestamp, enableIndexedDbPersistence, writeBatch, doc } from "firebase/firestore";
 import { apiRequest } from "./queryClient";
